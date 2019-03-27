@@ -3,19 +3,23 @@ import PropTypes from 'prop-types';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import * as FavoriteActions from '../../store/actions/favorites';
+import { Creators as FavoriteActions } from '../../store/ducks/favorites';
 
 class Main extends Component {
   static propTypes = {
     addFavoriteRequest: PropTypes.func.isRequired,
-    favorites: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.number,
-        name: PropTypes.string,
-        description: PropTypes.string,
-        url: PropTypes.string,
-      }),
-    ).isRequired,
+    favorites: PropTypes.shape({
+      loading: PropTypes.bool,
+      data: PropTypes.arrayOf(
+        PropTypes.shape({
+          id: PropTypes.number,
+          name: PropTypes.string,
+          description: PropTypes.string,
+          url: PropTypes.string,
+        }),
+      ),
+      error: PropTypes.oneOfType([null, PropTypes.string]),
+    }).isRequired,
   };
 
   state = {
@@ -29,6 +33,8 @@ class Main extends Component {
     const { repositoryInput } = this.state;
 
     addFavoriteRequest(repositoryInput);
+
+    this.setState({ repositoryInput: '' });
   };
 
   render() {
@@ -45,10 +51,14 @@ class Main extends Component {
             onChange={e => this.setState({ repositoryInput: e.target.value })}
           />
           <button type="submit">Adicionar</button>
+
+          {favorites.loading && <span>Carregando...</span>}
+
+          {!!favorites.error && <span style={{ color: '#F00' }}>{favorites.error}</span>}
         </form>
 
         <ul>
-          {favorites.map(favorite => (
+          {favorites.data.map(favorite => (
             <li key={favorite.id}>
               <p>
                 <strong>{favorite.name}</strong>
